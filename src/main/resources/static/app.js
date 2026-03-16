@@ -11,15 +11,13 @@ async function loadCustomers() {
     table.innerHTML = "";
 
     customers.forEach(c => {
-
         table.innerHTML += `
-        <tr>
+    <tr>
         <td>${c.id}</td>
-        <td>${c.name}</td>
-        <td>${c.accountNumber}</td>
+        <td>${c.firstName} ${c.lastName}</td> <td>${c.accountNumber}</td>
         <td>${c.balance}</td>
-        </tr>
-        `;
+    </tr>
+    `;
     });
 }
 
@@ -28,58 +26,63 @@ async function loadCustomers() {
 // TRANSFERIR DINERO
 const form = document.getElementById("transferForm");
 
-if(form){
+if (form) {
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-form.addEventListener("submit", async (e)=>{
+        const data = {
+            senderAccountNumber: document.getElementById("fromAccount").value,
+            receiverAccountNumber: document.getElementById("toAccount").value,
+            amount: parseFloat(document.getElementById("amount").value)
+        };
 
-    e.preventDefault();
+        try {
+            const response = await fetch(`${API}/transactions`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
 
-    const data = {
-        fromAccount: document.getElementById("fromAccount").value,
-        toAccount: document.getElementById("toAccount").value,
-        amount: document.getElementById("amount").value
-    };
+            // Si la respuesta es exitosa (status 200-299)
+            if (response.ok) {
+                // En lugar de guardar el JSON en 'result', mostramos un mensaje de éxito
+                document.getElementById("result").innerText = "✅ ¡Transferencia realizada con éxito!";
+                document.getElementById("result").style.color = "green";
 
-    const response = await fetch(`${API}/transactions`,{
-        method:"POST",
-        headers:{
-            "Content-Type":"application/json"
-        },
-        body: JSON.stringify(data)
+                form.reset(); // Limpia los campos del formulario automáticamente
+            } else {
+                // Si el servidor responde con un error (ej. saldo insuficiente)
+                const errorMsg = await response.text();
+                document.getElementById("result").innerText = "❌ Error: " + errorMsg;
+                document.getElementById("result").style.color = "red";
+            }
+        } catch (error) {
+            document.getElementById("result").innerText = "❌ No se pudo conectar con el servidor.";
+        }
     });
-
-    const result = await response.text();
-
-    document.getElementById("result").innerText = result;
-
-});
 }
-
 
 
 // HISTORIAL TRANSACCIONES
 async function loadTransactions(){
-
     const account = document.getElementById("accountNumber").value;
 
     const response = await fetch(`${API}/transactions/${account}`);
     const transactions = await response.json();
 
     const table = document.querySelector("#transactionsTable tbody");
-    table.innerHTML="";
+    table.innerHTML = "";
 
     transactions.forEach(t => {
-
         table.innerHTML += `
         <tr>
-        <td>${t.id}</td>
-        <td>${t.fromAccount}</td>
-        <td>${t.toAccount}</td>
-        <td>${t.amount}</td>
-        <td>${t.date}</td>
-        </tr>
+            <td>${t.id}</td>
+            <td>${t.senderAccountNumber}</td>   <td>${t.receiverAccountNumber}</td> <td>${t.amount}</td>
+            <td>${t.timestamp}</td>             </tr>
         `;
-
     });
+
 
 }

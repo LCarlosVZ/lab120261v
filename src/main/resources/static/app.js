@@ -45,15 +45,13 @@ if (form) {
                 body: JSON.stringify(data)
             });
 
-            // Si la respuesta es exitosa (status 200-299)
+            
             if (response.ok) {
-                // En lugar de guardar el JSON en 'result', mostramos un mensaje de éxito
                 document.getElementById("result").innerText = "✅ ¡Transferencia realizada con éxito!";
                 document.getElementById("result").style.color = "green";
 
-                form.reset(); // Limpia los campos del formulario automáticamente
+                form.reset(); 
             } else {
-                // Si el servidor responde con un error (ej. saldo insuficiente)
                 const errorMsg = await response.text();
                 document.getElementById("result").innerText = "❌ Error: " + errorMsg;
                 document.getElementById("result").style.color = "red";
